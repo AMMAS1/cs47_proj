@@ -2,9 +2,9 @@ import { StyleSheet, Text, View } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import MainP from "./screens/mainP";
-import Rules from "./screens/rulesP";
-import ProfileP from "./screens/profileP";
+import MainP from "./screens/MainP";
+import Rules from "./screens/RulesP";
+import ProfileP from "./screens/ProfileP";
 
 const Tab = createBottomTabNavigator();
 
