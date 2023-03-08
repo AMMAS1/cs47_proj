@@ -1,67 +1,190 @@
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, StyleSheet, View } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import React, { useEffect, useState } from "react";
+import {
+  Provider as PaperProvider,
+  Button,
+  TextInput,
+  Text,
+  Provider,
+  Chip,
+} from "react-native-paper";
+import SelectableChips from "../Components/SelectableChips";
 
 export default function MainP() {
-    const sma = 5;
+  const [selectedKey, setselectedKey] = useState("Live");
+
+  const [stockPrice, setStockPrice] = useState(0);
+  const [STOCK_SYMBOL, setSymbol] = useState("tsla");
+  const API_KEY = "sk_a13ad647a1f744e0a4c047fa9e1b61c9";
+
+  const sma = 5;
   const [data, setData] = useState({
     labels: ["January", "February", "March", "April", "May", "June"],
     datasets: [
       {
-        data: [
-          Math.random() * 100,
-          Math.random() * 100,
-        ],
+        data: [Math.random() * 100, Math.random() * 100],
       },
       {
-        data: [
-          Math.random() * 100,
-          Math.random() * 100,
-        ],
+        data: [Math.random() * 100, Math.random() * 100],
       },
       {
-        data: [
-          Math.random() * 100,
-          Math.random() * 100,
-        ],
+        data: [Math.random() * 100, Math.random() * 100],
       },
     ],
   });
   const [text, setText] = useState("O");
+
+  const [datatime, settime] = useState({
+    "1d": null,
+    "1w": null,
+    "1m": null,
+    "1y": null,
+    "ytd": null,
+  });
+
+  const jsonreader = (data) => {
+    // get the closing price of each day and put it in an array
+    var close = [];
+    for (var i = 0; i < data.length; i++) {
+      // in null put the last element of the array
+      if (data[i].close == null) {
+        close.push(close[i - 1]);
+      } else {
+        close.push(data[i].close);
+      }
+    }
+    return close;
+  };
+
+  const putdata = (newdata, timerange) => {
+    settime({
+      ...datatime,
+      [timerange]: newdata,
+    });
+    setData({
+      ...data,
+      datasets: [
+        {
+          data: newdata,
+        },
+      ],
+    });
+  };
+
+  const fetchdata = (timerange) => {
+    if (datatime[timerange] != null) {
+      putdata(datatime[timerange], timerange);
+      return;
+    }
+    fetch(
+      `https://cloud.iexapis.com/stable/stock/${STOCK_SYMBOL}/chart/${timerange}?token=${API_KEY}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        putdata(jsonreader(data), timerange);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const handleSelect = (key) => {
+    setselectedKey(key);
+    if (key != "Live") {
+      fetchdata(key);
+    }
+    else{
+      fetch(
+          `https://cloud.iexapis.com/stable/stock/${STOCK_SYMBOL}/chart/1d?token=${API_KEY}&chartLast=60`
+        )
+          .then((response) => response.json())
+          .then((newdata) => {
+            const newdatafiltered = jsonreader(newdata);
+            setData({
+              ...data,
+              datasets: [
+                {
+                  data: newdatafiltered,
+                },
+                {
+                  color: (opacity = 1) => `rgba(255, 0, 255, ${opacity})`,
+                  data: Array(newdatafiltered.length).fill(
+                    newdatafiltered.reduce((a, b) => a + b) /
+                    newdatafiltered.length
+                  ),
+                },
+                {
+                  color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+                  data: Array(newdatafiltered.length).fill(
+                    newdatafiltered
+                      .slice(newdatafiltered.length - sma)
+                      .reduce((a, b) => a + b) / sma
+                  ),
+                },
+              ],
+            });
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+    }
+  };
+
+
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setData({
-        ...data,
-        datasets: [
-          {
-            data: [
-              ...data.datasets[0].data.slice(
-                data.datasets[0].data.length == 20 ? 1 : 0
-              ),
-              Math.random() * 100,
-            ],
-          },
-          {
-            color: (opacity = 1) => `rgba(255, 0, 255, ${opacity})`,
-            data: Array(data.datasets[0].data.length).fill(
-              data.datasets[0].data.reduce((a, b) => a + b) /
-                data.datasets[0].data.length)
-            ,
-          },
-          {
-            color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
-            data: Array(data.datasets[0].data.length).fill(
-              data.datasets[0].data.slice(data.datasets[0].data.length - sma).reduce((a, b) => a + b) /
-              sma)
-            ,
-          },
-        ],
-      });
-      setText(data.datasets[0].data.slice(data.datasets[0].data.length - sma).reduce((a, b) => a + b) / sma < data.datasets[0].data.reduce((a, b) => a + b) / data.datasets[0].data.length ? "Buy" : "Sell"); 
-    }, 1);
+      if (selectedKey === "Live") {
+        console.log("fetching");
+        fetch(
+          `https://cloud.iexapis.com/stable/stock/${STOCK_SYMBOL}/chart/1d?token=${API_KEY}&chartLast=60`
+        )
+          .then((response) => response.json())
+          .then((newdata) => {
+            setData({
+              ...data,
+              datasets: [
+                {
+                  data: jsonreader(newdata),
+                },
+                {
+                  color: (opacity = 1) => `rgba(255, 0, 255, ${opacity})`,
+                  data: Array(data.datasets[0].data.length).fill(
+                    data.datasets[0].data.reduce((a, b) => a + b) /
+                      data.datasets[0].data.length
+                  ),
+                },
+                {
+                  color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+                  data: Array(data.datasets[0].data.length).fill(
+                    data.datasets[0].data
+                      .slice(data.datasets[0].data.length - sma)
+                      .reduce((a, b) => a + b) / sma
+                  ),
+                },
+              ],
+            });
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+          
+      }
+      setText(
+        data.datasets[0].data
+          .slice(data.datasets[0].data.length - sma)
+          .reduce((a, b) => a + b) /
+          sma <
+          data.datasets[0].data.reduce((a, b) => a + b) /
+            data.datasets[0].data.length
+          ? "Buy"
+          : "Sell"
+      );
+    }, 60000);
     return () => clearInterval(interval);
-  }, [data]);
+  }, [data, selectedKey]);
 
   return (
     <SafeAreaView>
@@ -95,18 +218,36 @@ export default function MainP() {
             borderRadius: 16,
           }}
         />
+        <SelectableChips
+          options={["Live", "1 Day", "1 Week", "1 Month", "1 Year", "YTD"]}
+          keys={["Live", "1d", "1w", "1m", "1y", "ytd"]}
+          icons={[
+            "clock",
+            "information",
+            "information",
+            "information",
+            "information",
+            "information",
+          ]}
+          selectedKey={selectedKey}
+          onSelect={handleSelect}
+        />
         <Text>{text}</Text>
+        <Text style={{ fontSize: 24 }}>
+          {stockPrice
+            ? `The current price of ${STOCK_SYMBOL} is $${stockPrice}`
+            : "Loading..."}
+        </Text>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: "#fff",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-  });
-  
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
