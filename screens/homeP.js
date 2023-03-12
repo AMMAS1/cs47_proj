@@ -18,7 +18,7 @@ export default function HomeP({ navigation }) {
             try {
                 const session = await supabase.auth.getSession()
                 if (session) {
-                    setAuth(true);
+                    
                 } else {
                     navigation.navigate('loginP')
                 }
