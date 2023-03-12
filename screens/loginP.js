@@ -46,7 +46,7 @@ export default LoginP = ({ navigation }) => {
             <Button title="Login" onPress={async () => {
                 data = await loginUser();
                 await getUser({token: data["session"]["access_token"]});
-                navigation.navigate('Home')
+                navigation.navigate('HomeP')
             }} />
         </View>
     )

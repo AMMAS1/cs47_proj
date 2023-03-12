@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MainP from "./mainP";
-import Rules from "./rulesP";
+import NewsP from "./newsP";
 import ProfileP from "./profileP";
 import { useEffect, useState } from "react";
 import { supabase } from "../env.js"
@@ -37,11 +37,9 @@ export default function HomeP({ navigation }) {
             let iconName;
 
             if (route.name === 'Main') {
-                iconName = focused
-                ? 'home'
-                : 'home-outline';
-            } else if (route.name === 'Rules') {
-                iconName = focused ? 'ios-list' : 'ios-list-outline';
+                iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'News') {
+                iconName = focused ? 'newspaper' : 'newspaper-outline';
             }
             else if (route.name === 'Profile') {
                 iconName = focused ? 'person' : 'person-outline';
@@ -52,11 +50,13 @@ export default function HomeP({ navigation }) {
             },
             tabBarActiveTintColor: 'tomato',
             tabBarInactiveTintColor: 'gray',
+            headerShown: false,
         })}
         >
         <Tab.Screen name="Main" component={MainP} />
-        <Tab.Screen name="Rules" component={Rules} />
+        <Tab.Screen name="News" component={NewsP} />
         <Tab.Screen name="Profile" component={ProfileP} />
+        
         </Tab.Navigator>
     )
 }
