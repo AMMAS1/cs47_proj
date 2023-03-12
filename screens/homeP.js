@@ -12,21 +12,21 @@ import { doesUserExist, getUser } from "./utils.js"
 const Tab = createBottomTabNavigator();
 
 export default function HomeP({ navigation }) {
-    const [auth, setAuth] = useState(false);
 
     useEffect(() => {
         const checkUser = async () => {
-            const {data: { session },} = await supabase.auth.getSession()
-            if (session) {
-                setAuth(true);
-            } else {
-                navigation.navigate('loginP')
+            try {
+                const session = await supabase.auth.getSession()
+                if (session) {
+                    setAuth(true);
+                } else {
+                    navigation.navigate('loginP')
+                }
+            } catch (err) {
+                console.log(err)
             }
         }
         checkUser();
-        supabase.auth.onAuthStateChange((_event, session) => {
-
-        });
     }, []);
 
 
