@@ -1,11 +1,26 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { Text, Image, StyleSheet, View, ScrollView } from 'react-native';
 import { images, Themes } from "../assets/Themes"
 import { Button } from 'react-native-paper';
+import { supabase } from "../env.js"
 
 const hundred = '100%';
 
 export default function ProfileP() {
+    const [user, setUser] = useState("johndoe@gmail.com");
+
+    useEffect(() => {
+        const checkUser = async () => {
+            try {
+                const data = await supabase.auth.getUser();
+                setUser(data["data"]["user"]["email"])
+            } catch (err) {
+                console.log(err);
+            }
+        }
+        checkUser();
+    }, []);
+
     return (
         <View>
             <ScrollView style={{width: hundred, height: hundred}} contentContainerStyle={styles.container}>
@@ -13,7 +28,7 @@ export default function ProfileP() {
                     <Image style={styles.pfp} source = {images.default} >
                     </Image>
                     <Text style={[styles.textSmall, {marginBottom: 15}]}>Default User</Text>
-                    <Text style={[styles.textSmall, {marginBottom: 15}]}>johndoe@gmail.com</Text>
+                    <Text style={[styles.textSmall, {marginBottom: 15}]}>{user}</Text>
                 </View>
                 <View style={[styles.section, {flex: 1, justifyContent: 'flex-start'}]}>
                     <Text style={styles.textLarge}>$100000</Text>
