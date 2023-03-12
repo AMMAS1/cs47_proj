@@ -1,10 +1,30 @@
 import { React, useState } from 'react'
 import { View, Text, StyleSheet, TextInput, Alert, Button } from 'react-native'
 import { Images, Themes } from "../assets/Themes"
+import { supabase } from "../env.js"
+import { doesUserExist, getUser } from "./utils.js"
 
-export default LoginP = () => {
-    const [user, onChangeUser] = useState('Username');
-    const [pass, onChangePass] = useState('Password');
+export default LoginP = ({ navigation }) => {
+    const [user, onChangeUser] = useState('jjhung66@stanford.edu');
+    const [pass, onChangePass] = useState('Stanford2025');
+
+    const signUpUser = async () => {
+        try {
+            const { data, error } = await supabase.auth.signUp({ email: user, password: pass }).then()
+            return data
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    const loginUser = async () => {
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email: user, password: pass })
+            return data
+        } catch (err) {
+            console.log(err)
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -20,7 +40,14 @@ export default LoginP = () => {
                 value={pass}
                 placeholder="Password"
             />
-            <Button title="Login" onPress={() => Alert.alert('Simple Button pressed')} />
+            <Button title="Register User" onPress={() => {
+                signUpUser();
+            }} />
+            <Button title="Login" onPress={async () => {
+                data = await loginUser();
+                await getUser({token: data["session"]["access_token"]});
+                navigation.navigate('Home')
+            }} />
         </View>
     )
 }
