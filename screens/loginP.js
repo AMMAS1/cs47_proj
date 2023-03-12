@@ -31,6 +31,7 @@ export default LoginP = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.container}>
             <NTextInput
+            activeOutlineColor={Themes.colors.base}
             style={styles.input}
             mode="outlined"
             label="Username"
@@ -39,6 +40,7 @@ export default LoginP = ({ navigation }) => {
             value={user}
             />
             <NTextInput
+            activeOutlineColor={Themes.colors.base}
             style={styles.input}
             mode="outlined"
             label="Password"

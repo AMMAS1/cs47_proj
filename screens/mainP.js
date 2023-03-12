@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import React, { useEffect, useState } from "react";
+import { Images, Themes } from "../assets/Themes"
 import {
   Text,
   TextInput as NTextInput,
@@ -242,14 +243,18 @@ export default function MainP() {
         </View>
        
       </View>
+      <View style={{width: "100%", display: "flex", alignItems: "center"}}>
       <NTextInput
+            activeOutlineColor={Themes.colors.base}
             mode="outlined"
             label="Trading Name"
             placeholder="e.x. tsla"
-            stlye={{ width: "80%"}}
+            style={{ width: "80%", margin: 10}}
             onChangeText={(text) => setTextbox(text)}
             />
+      
             <NButton
+            buttonColor={Themes.colors.base}
             mode="contained"
             onPress={() => 
             {
@@ -263,10 +268,11 @@ export default function MainP() {
                 ytd: null,
               });
             }}
-            style={{ width: "80%", margin: 10, backgroundColor: colors.greenishBuy }}
+            style={{ width: "80%", margin: 10}}
             >
             <Text style={{ color: "white" }}>Submit</Text>
             </NButton>
+      </View>
     </SafeAreaView>
   );
 }
