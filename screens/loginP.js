@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TextInput, Alert, Button } from 'react-native'
 import { Images, Themes } from "../assets/Themes"
 import { supabase } from "../env.js"
 import { doesUserExist, getUser } from "./utils.js"
+import { Button as NButton, TextInput as NTextInput } from 'react-native-paper'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default LoginP = ({ navigation }) => {
     const [user, onChangeUser] = useState('jjhung66@stanford.edu');
@@ -10,7 +12,7 @@ export default LoginP = ({ navigation }) => {
 
     const signUpUser = async () => {
         try {
-            const { data, error } = await supabase.auth.signUp({ email: user, password: pass }).then()
+            const { data, error } = await supabase.auth.signUp({ email: user, password: pass })
             return data
         } catch (err) {
             console.log(err)
@@ -27,28 +29,36 @@ export default LoginP = ({ navigation }) => {
     }
 
     return (
-        <View style={styles.container}>
-                        <TextInput
-                style={styles.input}
-                onChangeText={onChangeUser}
-                placeholder="Username"
-                value={user}
+        <SafeAreaView style={styles.container}>
+            <NTextInput
+            style={styles.input}
+            mode="outlined"
+            label="Username"
+            placeholder="Username"
+            onChangeText={onChangeUser}
+            value={user}
             />
-            <TextInput
-                style={styles.input}
-                onChangeText={onChangePass}
-                value={pass}
-                placeholder="Password"
+            <NTextInput
+            style={styles.input}
+            mode="outlined"
+            label="Password"
+            placeholder="Password"
+            onChangeText={onChangePass}
+            value={pass}
             />
-            <Button title="Register User" onPress={() => {
+            <NButton style={styles.btn} buttonColor={Themes.colors.base} icon="account-plus-outline" mode="contained" onPress={() => {
                 signUpUser();
-            }} />
-            <Button title="Login" onPress={async () => {
+            }} >
+                Sign Up
+            </NButton>
+            <NButton style={styles.btn} buttonColor={Themes.colors.base} icon="account-circle-outline" mode="contained" onPress={async () => {
                 data = await loginUser();
                 await getUser({token: data["session"]["access_token"]});
                 navigation.navigate('HomeP')
-            }} />
-        </View>
+            }} >
+                Login
+            </NButton>
+        </SafeAreaView>
     )
 }
 
@@ -61,9 +71,11 @@ const styles = StyleSheet.create({
         background: 'white',
     },
     input: {
-        height: 40,
+        width: '80%',
         margin: 12,
-        borderWidth: 1,
-        padding: 10,
     },
+    btn: {
+        width: '80%',
+        margin: 12,
+    }
 })
