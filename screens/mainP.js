@@ -4,22 +4,20 @@ import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import React, { useEffect, useState } from "react";
 import {
-  Provider as PaperProvider,
-  Button,
-  TextInput,
   Text,
-  Provider,
-  Chip,
-  TouchableRipple,
+  TextInput as NTextInput,
+  Button as NButton,
 } from "react-native-paper";
 import SelectableChips from "../Components/SelectableChips";
 import { colors } from "../assets/Themes/colors";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 export default function MainP() {
   const [selectedKey, setselectedKey] = useState("Live");
 
   const [stockPrice, setStockPrice] = useState(0);
   const [STOCK_SYMBOL, setSymbol] = useState("tsla");
+  const [textbox, setTextbox] = useState("");
   const API_KEY = "sk_a13ad647a1f744e0a4c047fa9e1b61c9";
 
   const sma = 5;
@@ -94,10 +92,6 @@ export default function MainP() {
         : "Sell"
     );
   };
-
-  useEffect(() => {
-    liveUpdate();
-  }, []);
   const [text, setText] = useState("O");
 
   const [datatime, settime] = useState({
@@ -108,6 +102,10 @@ export default function MainP() {
     ytd: null,
   });
 
+  useEffect(() => {
+    liveUpdate();
+  }, [STOCK_SYMBOL, datatime]);
+ 
   const jsonreader = (data) => {
     // get the closing price of each day and put it in an array
     var close = [];
@@ -175,6 +173,7 @@ export default function MainP() {
 
   return (
     <SafeAreaView>
+      
       <View>
         <LineChart
           data={data}
@@ -225,7 +224,7 @@ export default function MainP() {
             : "Loading..."}
         </Text>
         <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          <TouchableRipple
+          <TouchableOpacity
             onPress={() => console.log("Pressed")}
             rippleColor="rgba(0, 0, 0, .32)"
             style={{
@@ -234,23 +233,40 @@ export default function MainP() {
               justifyContent: "center",
               alignItems: "center",
               borderRadius: 40,
-              backgroundColor: { text } == "Buy" ? "green" : "red",
+              backgroundColor: text == "Buy" ? "green" : "red",
               margin: 10,
             }}
           >
-            <Text>{text}</Text>
-          </TouchableRipple>
+            <Text style = {{ color: "white"}}>{text}</Text>
+          </TouchableOpacity>
         </View>
+       
       </View>
+      <NTextInput
+            mode="outlined"
+            label="Trading Name"
+            placeholder="e.x. tsla"
+            stlye={{ width: "80%"}}
+            onChangeText={(text) => setTextbox(text)}
+            />
+            <NButton
+            mode="contained"
+            onPress={() => 
+            {
+              setSymbol(textbox);
+              // clear timerange
+              settime({
+                "1d": null,
+                "1w": null,
+                "1m": null,
+                "1y": null,
+                ytd: null,
+              });
+            }}
+            style={{ width: "80%", margin: 10, backgroundColor: colors.greenishBuy }}
+            >
+            <Text style={{ color: "white" }}>Submit</Text>
+            </NButton>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

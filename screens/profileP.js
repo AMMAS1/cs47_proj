@@ -23,6 +23,7 @@ export default function ProfileP() {
     }, []);
 
     return (
+        <View style={styles.container}>
         <SafeAreaView>
             <ScrollView style={{width: hundred, height: hundred}} contentContainerStyle={styles.container}>
                 <View style={styles.section}>
@@ -41,6 +42,7 @@ export default function ProfileP() {
                 </View>
             </ScrollView>
         </SafeAreaView>
+    </View>
     );
 }
 
