@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import axios from 'axios';
 import { ArticleP } from './articleP';
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const NewsfeedP = ({ navigation }) => {
   const [articles, setArticles] = useState([]);

@@ -1,4 +1,5 @@
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import { StyleSheet, Touchable, View } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LineChart } from "react-native-chart-kit";
 import { Dimensions } from "react-native";
 import React, { useEffect, useState } from "react";
@@ -9,8 +10,10 @@ import {
   Text,
   Provider,
   Chip,
+  TouchableRipple,
 } from "react-native-paper";
 import SelectableChips from "../Components/SelectableChips";
+import { colors } from "../assets/Themes/colors";
 
 export default function MainP() {
   const [selectedKey, setselectedKey] = useState("Live");
@@ -20,6 +23,7 @@ export default function MainP() {
   const API_KEY = "sk_a13ad647a1f744e0a4c047fa9e1b61c9";
 
   const sma = 5;
+
   const [data, setData] = useState({
     labels: ["January", "February", "March", "April", "May", "June"],
     datasets: [
@@ -34,6 +38,66 @@ export default function MainP() {
       },
     ],
   });
+
+  const liveUpdate = () => {
+    fetch(
+      `https://cloud.iexapis.com/stable/stock/${STOCK_SYMBOL}/chart/1d?token=${API_KEY}&chartLast=60`
+    )
+      .then((response) => response.json())
+      .then((newdata) => {
+        const newdatafiltered = jsonreader(newdata);
+        setData({
+          ...data,
+          datasets: [
+            {
+              data: newdatafiltered,
+            },
+            {
+              color: (opacity = 1) => `rgba(255, 0, 255, ${opacity})`,
+              data: Array(newdatafiltered.length).fill(
+                newdatafiltered.reduce((a, b) => a + b) / newdatafiltered.length
+              ),
+            },
+            {
+              color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
+              data: Array(newdatafiltered.length).fill(
+                newdatafiltered
+                  .slice(newdatafiltered.length - sma)
+                  .reduce((a, b) => a + b) / sma
+              ),
+            },
+          ],
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    // fetch the stock price
+    fetch(
+      `https://cloud.iexapis.com/stable/stock/${STOCK_SYMBOL}/quote?token=${API_KEY}`
+    )
+      .then((response) => response.json())
+      .then((newdata) => {
+        setStockPrice(newdata.latestPrice);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    setText(
+      data.datasets[0].data
+        .slice(data.datasets[0].data.length - sma)
+        .reduce((a, b) => a + b) /
+        sma <
+        data.datasets[0].data.reduce((a, b) => a + b) /
+          data.datasets[0].data.length
+        ? "Buy"
+        : "Sell"
+    );
+  };
+
+  useEffect(() => {
+    liveUpdate();
+  }, []);
   const [text, setText] = useState("O");
 
   const [datatime, settime] = useState({
@@ -41,7 +105,7 @@ export default function MainP() {
     "1w": null,
     "1m": null,
     "1y": null,
-    "ytd": null,
+    ytd: null,
   });
 
   const jsonreader = (data) => {
@@ -94,94 +158,17 @@ export default function MainP() {
     setselectedKey(key);
     if (key != "Live") {
       fetchdata(key);
-    }
-    else{
-      fetch(
-          `https://cloud.iexapis.com/stable/stock/${STOCK_SYMBOL}/chart/1d?token=${API_KEY}&chartLast=60`
-        )
-          .then((response) => response.json())
-          .then((newdata) => {
-            const newdatafiltered = jsonreader(newdata);
-            setData({
-              ...data,
-              datasets: [
-                {
-                  data: newdatafiltered,
-                },
-                {
-                  color: (opacity = 1) => `rgba(255, 0, 255, ${opacity})`,
-                  data: Array(newdatafiltered.length).fill(
-                    newdatafiltered.reduce((a, b) => a + b) /
-                    newdatafiltered.length
-                  ),
-                },
-                {
-                  color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
-                  data: Array(newdatafiltered.length).fill(
-                    newdatafiltered
-                      .slice(newdatafiltered.length - sma)
-                      .reduce((a, b) => a + b) / sma
-                  ),
-                },
-              ],
-            });
-          })
-          .catch((error) => {
-            console.error(error);
-          });
+    } else {
+      liveUpdate();
     }
   };
-
-
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (selectedKey === "Live") {
         console.log("fetching");
-        fetch(
-          `https://cloud.iexapis.com/stable/stock/${STOCK_SYMBOL}/chart/1d?token=${API_KEY}&chartLast=60`
-        )
-          .then((response) => response.json())
-          .then((newdata) => {
-            setData({
-              ...data,
-              datasets: [
-                {
-                  data: jsonreader(newdata),
-                },
-                {
-                  color: (opacity = 1) => `rgba(255, 0, 255, ${opacity})`,
-                  data: Array(data.datasets[0].data.length).fill(
-                    data.datasets[0].data.reduce((a, b) => a + b) /
-                      data.datasets[0].data.length
-                  ),
-                },
-                {
-                  color: (opacity = 1) => `rgba(0, 255, 0, ${opacity})`,
-                  data: Array(data.datasets[0].data.length).fill(
-                    data.datasets[0].data
-                      .slice(data.datasets[0].data.length - sma)
-                      .reduce((a, b) => a + b) / sma
-                  ),
-                },
-              ],
-            });
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-          
+        liveUpdate();
       }
-      setText(
-        data.datasets[0].data
-          .slice(data.datasets[0].data.length - sma)
-          .reduce((a, b) => a + b) /
-          sma <
-          data.datasets[0].data.reduce((a, b) => a + b) /
-            data.datasets[0].data.length
-          ? "Buy"
-          : "Sell"
-      );
     }, 60000);
     return () => clearInterval(interval);
   }, [data, selectedKey]);
@@ -232,12 +219,28 @@ export default function MainP() {
           selectedKey={selectedKey}
           onSelect={handleSelect}
         />
-        <Text>{text}</Text>
         <Text style={{ fontSize: 24 }}>
           {stockPrice
             ? `The current price of ${STOCK_SYMBOL} is $${stockPrice}`
             : "Loading..."}
         </Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+          <TouchableRipple
+            onPress={() => console.log("Pressed")}
+            rippleColor="rgba(0, 0, 0, .32)"
+            style={{
+              width: 100,
+              height: 100,
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: 40,
+              backgroundColor: { text } == "Buy" ? "green" : "red",
+              margin: 10,
+            }}
+          >
+            <Text>{text}</Text>
+          </TouchableRipple>
+        </View>
       </View>
     </SafeAreaView>
   );

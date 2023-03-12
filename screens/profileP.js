@@ -3,6 +3,7 @@ import { Text, Image, StyleSheet, View, ScrollView } from 'react-native';
 import { images, Themes } from "../assets/Themes"
 import { Button } from 'react-native-paper';
 import { supabase } from "../env.js"
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const hundred = '100%';
 
@@ -22,7 +23,7 @@ export default function ProfileP() {
     }, []);
 
     return (
-        <View>
+        <SafeAreaView>
             <ScrollView style={{width: hundred, height: hundred}} contentContainerStyle={styles.container}>
                 <View style={styles.section}>
                     <Image style={styles.pfp} source = {images.default} >
@@ -39,7 +40,7 @@ export default function ProfileP() {
                     </Button>
                 </View>
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 }
 
